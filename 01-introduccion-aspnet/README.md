@@ -132,153 +132,317 @@ app.Use(async (context, next) =>
 
 ### Ejercicio Guiado: "Sistema de Clínica Médica - Fundamentos"
 
-#### Paso 1: Crear proyecto en Visual Studio 2022
+#### Paso 1: Crear proyecto MVC en Visual Studio 2022
 ```
 1. Abrir Visual Studio Community 2022
-2. Crear nuevo proyecto → ASP.NET Core Web App
-3. Nombre: "SistemaClinica"
-4. Framework: .NET 8.0
-5. Authentication: None (por ahora)
-6. Configure for HTTPS: ✓
+2. Crear nuevo proyecto → "Aplicación web de ASP.NET Core"
+3. Nombre: "SistemaClinicaMVC"
+4. Plantilla: "Aplicación web de ASP.NET Core (Modelo-Vista-Controlador)"
+5. Framework: .NET 8.0
+6. Authentication Type: None (por ahora)
+7. Configure for HTTPS: ✓
+8. Enable Docker: ❌
+9. Do not use top-level statements: ❌
 ```
 
-#### Paso 2: Estructura básica de la clínica
+#### Paso 2: Explorar la estructura MVC generada automáticamente
+```
+SistemaClinicaMVC/
+├── Controllers/
+│   └── HomeController.cs          # 🎮 Controlador principal (ya creado)
+├── Models/
+│   └── ErrorViewModel.cs          # 📊 Modelo de error (ya creado)
+├── Views/
+│   ├── Home/
+│   │   ├── Index.cshtml          # 👁️ Página principal (ya creada)
+│   │   └── Privacy.cshtml        # 👁️ Página de privacidad (ya creada)
+│   └── Shared/
+│       ├── _Layout.cshtml        # 🎨 Plantilla base (ya creada)
+│       └── _ViewStart.cshtml     # ⚙️ Configuración de vistas (ya creada)
+└── wwwroot/                      # 🌐 Archivos públicos
+    ├── css/
+    ├── js/
+    └── lib/                      # 📚 Librerías (Bootstrap, jQuery)
+```
+
+#### Paso 3: Personalizar el controlador principal para la clínica
 ```csharp
-// Program.cs - Configuración inicial del sistema de clínica
-var builder = WebApplication.CreateBuilder(args);
+// Controllers/HomeController.cs - Modificar el controlador existente
+using Microsoft.AspNetCore.Mvc;
+using SistemaClinicaMVC.Models;
+using System.Diagnostics;
 
-// Agregar servicios del sistema de clínica
-builder.Services.AddRazorPages();
-
-var app = builder.Build();
-
-// Configurar pipeline
-if (!app.Environment.IsDevelopment())
+namespace SistemaClinicaMVC.Controllers
 {
-    app.UseExceptionHandler("/Error");
-    app.UseHsts();
+    public class HomeController : Controller
+    {
+        private readonly ILogger<HomeController> _logger;
+
+        public HomeController(ILogger<HomeController> logger)
+        {
+            _logger = logger;
+        }
+
+        // Página principal de la clínica
+        public IActionResult Index()
+        {
+            _logger.LogInformation("Usuario visitó la página principal de la clínica");
+            
+            // Datos de ejemplo para mostrar en la página
+            ViewBag.NombreClinica = "Clínica San José";
+            ViewBag.TotalPacientes = 150;
+            ViewBag.MedicosDisponibles = 8;
+            ViewBag.CitasHoy = 25;
+            
+            return View();
+        }
+
+        // Página de información de la clínica
+        public IActionResult Privacy()
+        {
+            ViewBag.TituloSeccion = "Información de la Clínica";
+            return View();
+        }
+
+        // Nueva acción: Módulos del sistema
+        public IActionResult Modulos()
+        {
+            _logger.LogInformation("Usuario accedió a la página de módulos");
+            
+            // Lista de módulos disponibles
+            var modulos = new List<string>
+            {
+                "Gestión de Pacientes",
+                "Directorio de Médicos", 
+                "Sistema de Citas",
+                "Historiales Médicos",
+                "Reportes y Estadísticas"
+            };
+            
+            ViewBag.ModulosDisponibles = modulos;
+            return View();
+        }
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error()
+        {
+            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+    }
+}
+```
+
+#### Paso 4: Personalizar la vista principal de la clínica
+```html
+<!-- Views/Home/Index.cshtml - Modificar la vista existente -->
+@{
+    ViewData["Title"] = "Sistema de Clínica Médica";
 }
 
-app.UseHttpsRedirection();
-app.UseStaticFiles();
-app.UseRouting();
+<div class="text-center">
+    <h1 class="display-4 text-primary">🏥 @ViewBag.NombreClinica</h1>
+    <p class="lead">Sistema Integral de Gestión Médica</p>
+    <hr class="my-4">
+</div>
 
-// Rutas básicas del sistema de clínica
-app.MapGet("/", () => "🏥 Sistema de Clínica Médica - Bienvenido");
-app.MapGet("/pacientes", () => "📋 Módulo de Pacientes");
-app.MapGet("/medicos", () => "👩‍⚕️ Módulo de Médicos");
-app.MapGet("/citas", () => "📅 Módulo de Citas Médicas");
-
-app.MapRazorPages();
-app.Run();
-```
-
-#### Paso 3: Crear página de inicio de la clínica
-```html
-<!-- wwwroot/index.html - Página principal del sistema -->
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Clínica Médica</title>
-    <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            margin: 40px; 
-            background-color: #f8f9fa;
-        }
-        .container { 
-            max-width: 800px; 
-            margin: 0 auto; 
-            background: white; 
-            padding: 30px; 
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .header { 
-            text-align: center; 
-            color: #2c5aa0; 
-            margin-bottom: 30px;
-        }
-        .modules { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
-            gap: 20px; 
-        }
-        .module { 
-            border: 1px solid #ddd; 
-            padding: 20px; 
-            border-radius: 8px; 
-            text-align: center;
-            transition: transform 0.2s;
-        }
-        .module:hover { 
-            transform: translateY(-5px); 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>🏥 Clínica San José</h1>
-            <p>Sistema de Gestión Médica</p>
-        </div>
-        
-        <div class="modules">
-            <div class="module">
-                <h3>👤 Pacientes</h3>
-                <p>Registro y gestión de pacientes</p>
-                <a href="/pacientes">Ver Pacientes</a>
-            </div>
-            <div class="module">
-                <h3>👩‍⚕️ Médicos</h3>
-                <p>Directorio médico de la clínica</p>
-                <a href="/medicos">Ver Médicos</a>
-            </div>
-            <div class="module">
-                <h3>📅 Citas</h3>
-                <p>Programación de citas médicas</p>
-                <a href="/citas">Ver Citas</a>
+<!-- Estadísticas principales -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary mb-3">
+            <div class="card-body text-center">
+                <h4 class="card-title">@ViewBag.TotalPacientes</h4>
+                <p class="card-text">Pacientes Registrados</p>
             </div>
         </div>
     </div>
-</body>
-</html>
+    <div class="col-md-3">
+        <div class="card text-white bg-success mb-3">
+            <div class="card-body text-center">
+                <h4 class="card-title">@ViewBag.MedicosDisponibles</h4>
+                <p class="card-text">Médicos Disponibles</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info mb-3">
+            <div class="card-body text-center">
+                <h4 class="card-title">@ViewBag.CitasHoy</h4>
+                <p class="card-text">Citas de Hoy</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning mb-3">
+            <div class="card-body text-center">
+                <h4 class="card-title">5</h4>
+                <p class="card-text">Especialidades</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Módulos principales -->
+<div class="row">
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <h5 class="card-title">👤 Pacientes</h5>
+                <p class="card-text">Registro y gestión de pacientes de la clínica</p>
+                <a href="#" class="btn btn-primary">Gestionar Pacientes</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <h5 class="card-title">👩‍⚕️ Médicos</h5>
+                <p class="card-text">Directorio y especialidades médicas</p>
+                <a href="#" class="btn btn-success">Ver Médicos</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <h5 class="card-title">📅 Citas</h5>
+                <p class="card-text">Programación y gestión de citas médicas</p>
+                <a href="#" class="btn btn-info">Programar Citas</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Crear nueva vista para módulos -->
+<!-- Views/Home/Modulos.cshtml (archivo nuevo) -->
+@{
+    ViewData["Title"] = "Módulos del Sistema";
+}
+
+<div class="container">
+    <h2 class="text-center mb-4">📋 Módulos del Sistema de Clínica</h2>
+    
+    <div class="row">
+        @foreach (var modulo in ViewBag.ModulosDisponibles)
+        {
+            <div class="col-md-6 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">✅ @modulo</h5>
+                        <p class="card-text">Funcionalidad disponible en desarrollo</p>
+                        <small class="text-muted">Próximamente en las siguientes secciones</small>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+    
+    <div class="text-center mt-4">
+        <a asp-action="Index" class="btn btn-secondary">← Volver al Inicio</a>
+    </div>
+</div>
+``` 
+#### Paso 5: Actualizar la navegación en el Layout
+```html
+<!-- Views/Shared/_Layout.cshtml - Modificar la barra de navegación -->
+<nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+    <div class="container-fluid">
+        <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+            🏥 Sistema Clínica
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+            <ul class="navbar-nav flex-grow-1">
+                <li class="nav-item">
+                    <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">🏠 Inicio</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Modulos">📋 Módulos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">ℹ️ Información</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+```
+
+#### Paso 6: Ejecutar y probar el proyecto MVC
+```bash
+# En la terminal de Visual Studio o externa:
+dotnet run
+
+# Navegar a las URLs:
+# - https://localhost:5001/ → Página principal con estadísticas
+# - https://localhost:5001/Home/Modulos → Lista de módulos
+# - https://localhost:5001/Home/Privacy → Información de la clínica
 ```
 
 ### Puntos Clave a Explicar:
-- ¿Cómo Visual Studio 2022 facilita el desarrollo?
-- ¿Qué hace cada línea de código en Program.cs?
-- ¿Cómo se organizan los módulos de una clínica?
-- ¿Qué es el middleware y cómo funciona?
-- ¿Cómo se sirven archivos estáticos (HTML, CSS)?
+- **Patrón MVC**: ¿Cómo se separan las responsabilidades?
+  - **Model**: Datos y lógica de negocio (próximo módulo)
+  - **View**: Interfaz de usuario (archivos .cshtml)
+  - **Controller**: Lógica de control y navegación
+- **Razor Syntax**: ¿Cómo mezclar C# con HTML?
+- **ViewBag**: ¿Cómo pasar datos del controlador a la vista?
+- **Tag Helpers**: `asp-controller`, `asp-action` para navegación
+- **Bootstrap**: Framework CSS ya incluido en la plantilla MVC
+- **Estructura de carpetas**: Convenciones de ASP.NET Core MVC
 
 ## 🏠 Desafío Autónomo (Casa)
 
-### Tarea: "Extensión del Sistema de Clínica"
-Continuar el desarrollo del sistema de clínica iniciado en clase:
+### Tarea: "Extensión del Sistema MVC de Clínica"
+Continuar el desarrollo del sistema MVC de clínica iniciado en clase:
 
 **Requisitos:**
-1. **Ruta de especialidades** (`/especialidades`) - Lista de especialidades médicas
-2. **Ruta de emergencias** (`/emergencias`) - Página de contacto de emergencias
-3. **Ruta de horarios** (`/horarios/{dia}`) - Muestra horarios de atención por día
-4. **Ruta de ubicación** (`/ubicacion`) - Información de contacto y ubicación
-5. **Página 404** personalizada con tema médico
+1. **Nueva acción**: `Especialidades()` en HomeController - Lista de especialidades médicas
+2. **Nueva acción**: `Emergencias()` en HomeController - Página de contacto de emergencias  
+3. **Nueva acción**: `Horarios(string dia)` en HomeController - Horarios de atención por día
+4. **Nueva acción**: `Ubicacion()` en HomeController - Información de contacto y ubicación
+5. **Crear las vistas correspondientes** para cada nueva acción
+6. **Actualizar la navegación** en _Layout.cshtml para incluir los nuevos enlaces
+
+**Ejemplo de nueva acción:**
+```csharp
+// Agregar al HomeController.cs
+public IActionResult Especialidades()
+{
+    var especialidades = new List<string>
+    {
+        "Medicina General",
+        "Pediatría", 
+        "Cardiología",
+        "Dermatología",
+        "Ginecología"
+    };
+    
+    ViewBag.EspecialidadesDisponibles = especialidades;
+    return View();
+}
+
+public IActionResult Horarios(string dia)
+{
+    ViewBag.DiaSeleccionado = dia ?? "lunes";
+    ViewBag.HorarioAtencion = "8:00 AM - 6:00 PM";
+    return View();
+}
+```
 
 **Entregables:**
-- Proyecto de Visual Studio 2022 completo
-- Screenshots de cada ruta funcionando
+- Proyecto MVC de Visual Studio 2022 completo y funcional
+- Screenshots de cada nueva vista funcionando
 - Archivo README.md con instrucciones de ejecución
-- Documentación de las rutas implementadas
+- Navegación funcional entre todas las páginas
 
 **Criterios de Evaluación:**
-- ✅ Todas las rutas funcionan correctamente
+- ✅ Todas las acciones del controlador funcionan correctamente
+- ✅ Vistas creadas siguiendo las convenciones MVC
+- ✅ Navegación coherente usando Tag Helpers
+- ✅ Tema consistente de clínica médica
+- ✅ Uso correcto de ViewBag para pasar datos
 - ✅ Código limpio y comentado
-- ✅ Tema coherente de clínica médica
-- ✅ Página 404 personalizada con diseño médico
-- ✅ Uso correcto de parámetros de ruta
 
 ## 🚀 Avance en el Proyecto Final
 

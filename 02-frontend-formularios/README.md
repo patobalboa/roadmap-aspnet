@@ -216,52 +216,58 @@ return RedirectToAction("Index");
 
 ## 🔧 Actividad Práctica en Clase (2 horas)
 
-### Ejercicio Guiado: "Formulario de Registro de Pacientes"
+### Ejercicio Guiado: "Agregar Formularios al Sistema MVC de Clínica"
+*Continuamos con el proyecto SistemaClinicaMVC del módulo anterior*
 
-#### Paso 1: Configurar Bootstrap en el Sistema de Clínica
+#### Paso 1: Mejorar el Layout con Bootstrap (ya incluido en el template MVC)
 ```html
-<!-- Views/Shared/_Layout.cshtml -->
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>🏥 Sistema de Clínica Médica</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-</head>
-<body>
-    <!-- Navbar de la clínica -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="/">
-                <i class="fas fa-hospital"></i> Clínica San José
-            </a>
-            <div class="navbar-nav">
-                <a class="nav-link" href="/"><i class="fas fa-home"></i> Inicio</a>
-                <a class="nav-link" href="/pacientes"><i class="fas fa-user-injured"></i> Pacientes</a>
-                <a class="nav-link" href="/medicos"><i class="fas fa-user-md"></i> Médicos</a>
-                <a class="nav-link" href="/citas"><i class="fas fa-calendar-alt"></i> Citas</a>
-            </div>
+<!-- Views/Shared/_Layout.cshtml - El template MVC ya incluye Bootstrap -->
+<!-- Solo necesitamos personalizar el navbar existente para la clínica -->
+
+<nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-primary border-bottom box-shadow mb-3">
+    <div class="container-fluid">
+        <a class="navbar-brand text-white" asp-area="" asp-controller="Home" asp-action="Index">
+            🏥 Clínica San José
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+            <ul class="navbar-nav flex-grow-1">
+                <li class="nav-item">
+                    <a class="nav-link text-white" asp-area="" asp-controller="Home" asp-action="Index">
+                        🏠 Inicio
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" asp-area="" asp-controller="Pacientes" asp-action="Index">
+                        👤 Pacientes
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" asp-area="" asp-controller="Home" asp-action="Modulos">
+                        📋 Módulos
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" asp-area="" asp-controller="Home" asp-action="Privacy">
+                        ℹ️ Información
+                    </a>
+                </li>
+            </ul>
         </div>
-    </nav>
-
-    <!-- Contenido principal -->
-    <main class="container mt-4">
-        @RenderBody()
-    </main>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+    </div>
+</nav>
 ```
 
-#### Paso 2: Crear modelo de Paciente
+#### Paso 2: Crear el modelo Paciente
 ```csharp
-// Models/PacienteViewModel.cs
+// Models/Paciente.cs - Crear nuevo archivo
 using System.ComponentModel.DataAnnotations;
 
-public class PacienteViewModel
+namespace SistemaClinicaMVC.Models
+{
+    public class Paciente
 {
     [Required(ErrorMessage = "La cédula es obligatoria")]
     [Display(Name = "Número de Cédula")]
@@ -298,6 +304,234 @@ public class PacienteViewModel
     public string Direccion { get; set; }
 
     [Display(Name = "Tipo de Sangre")]
+    public string? TipoSangre { get; set; }
+
+    [Display(Name = "Contacto de Emergencia")]
+    public string? ContactoEmergencia { get; set; }
+
+    [Display(Name = "Teléfono de Emergencia")]
+    public string? TelefonoEmergencia { get; set; }
+
+    // Propiedades calculadas
+    public string NombreCompleto => $"{Nombres} {Apellidos}";
+    
+    public int Edad
+    {
+        get
+        {
+            var hoy = DateTime.Today;
+            var edad = hoy.Year - FechaNacimiento.Year;
+            if (FechaNacimiento.Date > hoy.AddYears(-edad)) edad--;
+            return edad;
+        }
+    }
+}
+```
+
+#### Paso 3: Crear el controlador de Pacientes
+```csharp
+// Controllers/PacientesController.cs - Crear nuevo archivo
+using Microsoft.AspNetCore.Mvc;
+using SistemaClinicaMVC.Models;
+
+namespace SistemaClinicaMVC.Controllers
+{
+    public class PacientesController : Controller
+    {
+        // Lista estática temporal (en el siguiente módulo usaremos base de datos)
+        private static List<Paciente> _pacientes = new List<Paciente>
+        {
+            new Paciente
+            {
+                Cedula = "1234567890",
+                Nombres = "Juan Carlos",
+                Apellidos = "Pérez García",
+                FechaNacimiento = new DateTime(1990, 5, 15),
+                Telefono = "0987654321",
+                Email = "juan.perez@email.com",
+                Direccion = "Av. Principal 123",
+                TipoSangre = "O+"
+            },
+            new Paciente
+            {
+                Cedula = "0987654321", 
+                Nombres = "María Elena",
+                Apellidos = "González López",
+                FechaNacimiento = new DateTime(1985, 8, 22),
+                Telefono = "0912345678",
+                Email = "maria.gonzalez@email.com",
+                Direccion = "Calle Secundaria 456",
+                TipoSangre = "A+"
+            }
+        };
+
+        // GET: Pacientes - Lista todos los pacientes
+        public IActionResult Index()
+        {
+            ViewBag.TotalPacientes = _pacientes.Count;
+            return View(_pacientes);
+        }
+
+        // GET: Pacientes/Crear - Muestra el formulario de registro
+        public IActionResult Crear()
+        {
+            return View();
+        }
+
+        // POST: Pacientes/Crear - Procesa el formulario de registro
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Crear(Paciente paciente)
+        {
+            if (ModelState.IsValid)
+            {
+                // Verificar si la cédula ya existe
+                if (_pacientes.Any(p => p.Cedula == paciente.Cedula))
+                {
+                    ModelState.AddModelError("Cedula", "Ya existe un paciente con esta cédula");
+                    return View(paciente);
+                }
+
+                // Agregar paciente a la lista
+                _pacientes.Add(paciente);
+                
+                TempData["Mensaje"] = $"Paciente {paciente.NombreCompleto} registrado exitosamente";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Si hay errores, regresar al formulario
+            return View(paciente);
+        }
+
+        // GET: Pacientes/Detalle/1234567890 - Muestra detalles del paciente
+        public IActionResult Detalle(string cedula)
+        {
+            if (string.IsNullOrEmpty(cedula))
+            {
+                return NotFound();
+            }
+
+            var paciente = _pacientes.FirstOrDefault(p => p.Cedula == cedula);
+            if (paciente == null)
+            {
+                return NotFound();
+            }
+
+            return View(paciente);
+        }
+
+        // GET: Pacientes/Buscar - Formulario de búsqueda
+        public IActionResult Buscar()
+        {
+            return View();
+        }
+
+        // POST: Pacientes/Buscar - Procesar búsqueda
+        [HttpPost]
+        public IActionResult Buscar(string termino)
+        {
+            if (string.IsNullOrWhiteSpace(termino))
+            {
+                ViewBag.Mensaje = "Ingrese un término de búsqueda";
+                return View();
+            }
+
+            var resultados = _pacientes.Where(p => 
+                p.Nombres.ToLower().Contains(termino.ToLower()) ||
+                p.Apellidos.ToLower().Contains(termino.ToLower()) ||
+                p.Cedula.Contains(termino)
+            ).ToList();
+
+            ViewBag.TerminoBusqueda = termino;
+            ViewBag.CantidadResultados = resultados.Count;
+
+            return View("ResultadosBusqueda", resultados);
+        }
+    }
+}
+```
+
+#### Paso 4: Crear las vistas para el módulo de Pacientes
+```html
+<!-- Views/Pacientes/Index.cshtml - Lista de pacientes -->
+@model List<SistemaClinicaMVC.Models.Paciente>
+
+@{
+    ViewData["Title"] = "Lista de Pacientes";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>👤 Gestión de Pacientes</h2>
+    <a asp-action="Crear" class="btn btn-success">
+        <i class="bi bi-person-plus"></i> Registrar Nuevo Paciente
+    </a>
+</div>
+
+@if (TempData["Mensaje"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <strong>¡Éxito!</strong> @TempData["Mensaje"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row mb-3">
+    <div class="col-md-6">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <h4>@ViewBag.TotalPacientes</h4>
+                <p class="mb-0">Pacientes Registrados</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <a asp-action="Buscar" class="btn btn-outline-primary w-100 p-3">
+            🔍 Buscar Paciente
+        </a>
+    </div>
+</div>
+
+@if (Model.Any())
+{
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Cédula</th>
+                    <th>Nombre Completo</th>
+                    <th>Edad</th>
+                    <th>Teléfono</th>
+                    <th>Email</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var paciente in Model)
+                {
+                    <tr>
+                        <td>@paciente.Cedula</td>
+                        <td>@paciente.NombreCompleto</td>
+                        <td>@paciente.Edad años</td>
+                        <td>@paciente.Telefono</td>
+                        <td>@paciente.Email</td>
+                        <td>
+                            <a asp-action="Detalle" asp-route-cedula="@paciente.Cedula" 
+                               class="btn btn-sm btn-info">Ver</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <div class="text-center py-5">
+        <h4 class="text-muted">No hay pacientes registrados</h4>
+        <p class="text-muted">Registre el primer paciente para comenzar</p>
+        <a asp-action="Crear" class="btn btn-primary">Registrar Paciente</a>
+    </div>
+}
     public string TipoSangre { get; set; }
 
     [Display(Name = "Contacto de Emergencia")]
@@ -421,6 +655,114 @@ public class PacienteViewModel
                             <h5 class="text-primary mb-3 mt-3">🚨 Contacto de Emergencia</h5>
                         </div>
                         
+```
+
+#### Paso 5: Crear el formulario de registro de pacientes
+```html
+<!-- Views/Pacientes/Crear.cshtml - Formulario de registro -->
+@model SistemaClinicaMVC.Models.Paciente
+
+@{
+    ViewData["Title"] = "Registrar Paciente";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">
+                    👤 Registrar Nuevo Paciente
+                </h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="Crear" method="post">
+                    @Html.AntiForgeryToken()
+                    
+                    <!-- Información Personal -->
+                    <h5 class="text-primary mb-3">📋 Información Personal</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Cedula" class="form-label"></label>
+                                <input asp-for="Cedula" class="form-control" placeholder="1234567890" />
+                                <span asp-validation-for="Cedula" class="text-danger"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="FechaNacimiento" class="form-label"></label>
+                                <input asp-for="FechaNacimiento" class="form-control" type="date" />
+                                <span asp-validation-for="FechaNacimiento" class="text-danger"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Nombres" class="form-label"></label>
+                                <input asp-for="Nombres" class="form-control" placeholder="Juan Carlos" />
+                                <span asp-validation-for="Nombres" class="text-danger"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Apellidos" class="form-label"></label>
+                                <input asp-for="Apellidos" class="form-control" placeholder="Pérez González" />
+                                <span asp-validation-for="Apellidos" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Información de Contacto -->
+                    <h5 class="text-primary mb-3 mt-3">📞 Información de Contacto</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Telefono" class="form-label"></label>
+                                <input asp-for="Telefono" class="form-control" placeholder="0987654321" />
+                                <span asp-validation-for="Telefono" class="text-danger"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Email" class="form-label"></label>
+                                <input asp-for="Email" class="form-control" placeholder="paciente@email.com" />
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label asp-for="Direccion" class="form-label"></label>
+                                <textarea asp-for="Direccion" class="form-control" rows="2" 
+                                         placeholder="Av. Principal 123, Ciudad"></textarea>
+                                <span asp-validation-for="Direccion" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Información Médica -->
+                    <h5 class="text-primary mb-3 mt-3">🩺 Información Médica</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="TipoSangre" class="form-label"></label>
+                                <select asp-for="TipoSangre" class="form-select">
+                                    <option value="">Seleccione tipo de sangre</option>
+                                    <option value="A+">A+</option>
+                                    <option value="A-">A-</option>
+                                    <option value="B+">B+</option>
+                                    <option value="B-">B-</option>
+                                    <option value="AB+">AB+</option>
+                                    <option value="AB-">AB-</option>
+                                    <option value="O+">O+</option>
+                                    <option value="O-">O-</option>
+                                </select>
+                            </div>
+                        </div>
+                        
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label asp-for="ContactoEmergencia" class="form-label"></label>
@@ -441,11 +783,11 @@ public class PacienteViewModel
                     <!-- Botones -->
                     <div class="row mt-4">
                         <div class="col-md-12 text-center">
-                            <button type="submit" class="btn btn-primary btn-lg me-2">
-                                <i class="fas fa-save"></i> Registrar Paciente
+                            <button type="submit" class="btn btn-success btn-lg me-2">
+                                💾 Registrar Paciente
                             </button>
-                            <a href="/pacientes" class="btn btn-secondary btn-lg">
-                                <i class="fas fa-times"></i> Cancelar
+                            <a asp-action="Index" class="btn btn-secondary btn-lg">
+                                ❌ Cancelar
                             </a>
                         </div>
                     </div>
@@ -458,6 +800,95 @@ public class PacienteViewModel
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }
+```
+
+#### Paso 6: Crear vista de detalles del paciente
+```html
+<!-- Views/Pacientes/Detalle.cshtml -->
+@model SistemaClinicaMVC.Models.Paciente
+
+@{
+    ViewData["Title"] = "Detalle del Paciente";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">👤 @Model.NombreCompleto</h4>
+                <span class="badge bg-light text-dark">@Model.Edad años</span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5 class="text-primary">📋 Información Personal</h5>
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Cédula:</strong></td>
+                                <td>@Model.Cedula</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Fecha Nacimiento:</strong></td>
+                                <td>@Model.FechaNacimiento.ToString("dd/MM/yyyy")</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Tipo de Sangre:</strong></td>
+                                <td>@(Model.TipoSangre ?? "No especificado")</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h5 class="text-primary">📞 Contacto</h5>
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Teléfono:</strong></td>
+                                <td>@Model.Telefono</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Email:</strong></td>
+                                <td>@Model.Email</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Dirección:</strong></td>
+                                <td>@(Model.Direccion ?? "No especificada")</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                @if (!string.IsNullOrEmpty(Model.ContactoEmergencia))
+                {
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <h5 class="text-danger">🚨 Contacto de Emergencia</h5>
+                            <div class="alert alert-warning">
+                                <strong>@Model.ContactoEmergencia</strong><br>
+                                Teléfono: @(Model.TelefonoEmergencia ?? "No especificado")
+                            </div>
+                        </div>
+                    </div>
+                }
+                
+                <div class="text-center mt-4">
+                    <a asp-action="Index" class="btn btn-primary">← Volver a Lista</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+```
+
+#### Paso 7: Probar el módulo completo de Pacientes
+```bash
+# Ejecutar la aplicación
+dotnet run
+
+# Navegar a las URLs:
+# - https://localhost:5001/Pacientes → Lista de pacientes
+# - https://localhost:5001/Pacientes/Crear → Formulario de registro
+# - https://localhost:5001/Pacientes/Detalle/1234567890 → Detalles del paciente
+```
 ```
 
 #### Paso 2: Crear el Formulario
@@ -552,93 +983,107 @@ public class HomeController : Controller
 ```
 
 ### Puntos Clave a Explicar:
-- Bootstrap grid system y componentes
-- Diferencia entre GET y POST
-- Validación HTML5 vs servidor
-- ViewBag para mensajes temporales
+- **Patrón MVC**: Separación Model-View-Controller
+- **Tag Helpers**: `asp-for`, `asp-action`, etc.
+- **Model Binding**: Automático entre formulario y modelo
+- **Data Annotations**: Validaciones en el modelo
+- **ViewBag vs TempData**: Diferencias y usos apropiados
+- **Bootstrap en ASP.NET Core**: Clases CSS para formularios responsivos
 
 ## 🏠 Desafío Autónomo (Casa)
 
-### Tarea: "Formulario de Registro Completo"
-Crear un sistema de registro de usuarios con múltiples pasos.
+### Tarea: "Módulo de Médicos para el Sistema de Clínica"
+Crear un módulo completo de médicos siguiendo el patrón establecido con pacientes.
 
 **Requisitos Funcionales:**
-1. **Página de Registro** (`/registro`)
-   - Datos personales: nombre, apellido, email, teléfono
-   - Fecha de nacimiento (con validación de edad mínima 18 años)
-   - Género (select con opciones)
-   - País y ciudad
-   - Checkbox de términos y condiciones
+1. **Modelo Medico** (`Models/Medico.cs`)
+   - Cédula, Nombres, Apellidos, Email, Teléfono
+   - Especialidad, Número de Licencia Médica
+   - Horarios de atención, Años de experiencia
+   - Validaciones usando Data Annotations
 
-2. **Página de Confirmación** (`/registro/confirmacion`)
-   - Mostrar todos los datos ingresados
-   - Botón "Confirmar" y "Editar"
-   - Mensaje de éxito después de confirmar
+2. **Controlador MedicosController** (`Controllers/MedicosController.cs`)
+   - Acciones: Index, Crear, Detalle, Buscar
+   - Lista estática temporal de médicos
+   - Validación y manejo de errores
 
-3. **Página de Lista** (`/usuarios`)
-   - Tabla con todos los usuarios registrados
-   - Información básica en formato de cards o tabla
+3. **Vistas del módulo Médicos** (`Views/Medicos/`)
+   - Index.cshtml - Lista de médicos con especialidades
+   - Crear.cshtml - Formulario de registro de médicos
+   - Detalle.cshtml - Información completa del médico
+
+4. **Formulario de Búsqueda de Médicos**
+   - Buscar por nombre, especialidad o número de licencia
+   - Filtros por especialidad médica
+   - Resultados organizados por especialidad
 
 **Requisitos Técnicos:**
-- ✅ Diseño responsivo con Bootstrap
-- ✅ Validación HTML5 en el cliente
-- ✅ Validación en el servidor
-- ✅ Manejo de errores y mensajes de éxito
-- ✅ Navegación clara entre páginas
+- ✅ Seguir el patrón MVC establecido en pacientes
+- ✅ Usar Tag Helpers para formularios y navegación
+- ✅ Data Annotations para validaciones
+- ✅ Bootstrap para diseño responsivo
+- ✅ TempData para mensajes de éxito/error
+- ✅ Navegación coherente con el sistema existente
+
+**Ejemplo de especialidades médicas:**
+- Medicina General
+- Cardiología
+- Pediatría
+- Ginecología
+- Dermatología
+- Ortopedia
+- Neurología
 
 **Entregables:**
-- Código fuente completo
-- Screenshots de todas las páginas
-- Video corto (2-3 min) demostrando la funcionalidad
-- Documento con reflexiones sobre dificultades encontradas
+- Código fuente del módulo completo de médicos
+- Screenshots de todas las vistas funcionando
+- Navegación funcional desde el menú principal
+- Integración con el sistema existente de clínica
 
 ## 🚀 Avance en el Proyecto Final
 
-### Diseño del Frontend
-Aplicar lo aprendido al proyecto elegido en el módulo anterior.
+### Continuación del Sistema de Clínica MVC
+Expandir el proyecto SistemaClinicaMVC con más funcionalidades.
 
-#### Para Sistema de Clínica:
-1. **Página de inicio** con dashboard básico
-2. **Formulario de registro de pacientes**
-3. **Formulario de agendar citas**
-4. **Página de listado** (pacientes o citas)
+#### Módulos Implementados hasta Ahora:
+1. ✅ **Página de inicio** - HomeController con estadísticas
+2. ✅ **Módulo de Pacientes** - CRUD completo con formularios
+3. 🔄 **Módulo de Médicos** - A implementar en la tarea
 
-#### Para Sistema POS:
-1. **Página de inicio** con resumen de ventas
-2. **Formulario de registro de productos**
-3. **Formulario de nueva venta**
-4. **Página de inventario**
+#### Próximos Módulos (Siguientes Secciones):
+4. **Sistema de Citas** - Relacionar pacientes con médicos
+5. **Dashboard con Razor Pages** - Reportes y estadísticas
+6. **Base de Datos** - Persistencia real con Entity Framework
 
-#### Para Sistema de Reservas:
-1. **Página de inicio** con espacios disponibles
-2. **Formulario de registro de usuarios**
-3. **Formulario de nueva reserva**
-4. **Página de mis reservas**
-
-### Tareas Específicas:
-1. **Crear layout principal** con navegación
-2. **Implementar 2-3 formularios** relacionados con tu dominio
-3. **Usar Bootstrap** para diseño responsivo
-4. **Agregar validación básica** en cliente y servidor
-5. **Documentar el progreso** en `PROYECTO.md`
-
-### Estructura Esperada:
+### Estado Actual del Sistema:
 ```
-MiProyectoFinal/
+SistemaClinicaMVC/
 ├── Controllers/
-│   └── HomeController.cs
+│   ├── HomeController.cs          ✅ Implementado
+│   ├── PacientesController.cs     ✅ Implementado
+│   └── MedicosController.cs       🔄 A implementar
+├── Models/
+│   ├── Paciente.cs               ✅ Implementado
+│   └── Medico.cs                 🔄 A implementar
 ├── Views/
 │   ├── Shared/
-│   │   └── _Layout.cshtml
-│   └── Home/
-│       ├── Index.cshtml
-│       ├── Formulario1.cshtml
-│       └── Formulario2.cshtml
-├── wwwroot/
-│   └── css/
-│       └── custom.css
-└── ...
+│   │   └── _Layout.cshtml        ✅ Personalizado para clínica
+│   ├── Home/
+│   │   ├── Index.cshtml          ✅ Dashboard clínica
+│   │   └── Modulos.cshtml        ✅ Lista de módulos
+│   └── Pacientes/
+│       ├── Index.cshtml          ✅ Lista de pacientes
+│       ├── Crear.cshtml          ✅ Formulario registro
+│       └── Detalle.cshtml        ✅ Detalles paciente
+└── wwwroot/                      ✅ Bootstrap incluido
 ```
+
+### URLs Funcionales:
+- `https://localhost:5001/` → Dashboard principal
+- `https://localhost:5001/Home/Modulos` → Lista de módulos  
+- `https://localhost:5001/Pacientes` → Gestión de pacientes
+- `https://localhost:5001/Pacientes/Crear` → Registro de paciente
+- `https://localhost:5001/Medicos` → 🔄 A implementar en la tarea
 
 ## 📝 Material de Apoyo
 - [Bootstrap 5 Documentation](https://getbootstrap.com/docs/5.3/)
