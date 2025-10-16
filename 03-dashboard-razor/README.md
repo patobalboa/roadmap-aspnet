@@ -106,106 +106,99 @@ Los TagHelpers son atributos especiales que ayudan a generar HTML dinámico.
 
 #### Paso 1: Configurar Razor Pages en el Sistema de Clínica
 ```csharp
-// Program.cs
+using Microsoft.Extensions.FileSystemGlobbing.Internal.Patterns;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Agregar servicios para el sistema de clínica
+// Add services to the container.
+builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
-// Configurar pipeline
+// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error");
+    app.UseExceptionHandler("/Home/Error");
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
 }
 
+app.UseHttpsRedirection();
 app.UseStaticFiles();
+
 app.UseRouting();
+
+app.UseAuthorization();
 app.MapRazorPages();
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+
 
 app.Run();
+
 ```
 
 #### Paso 2: Crear ViewModel para Dashboard de la Clínica
 ```csharp
-// Models/DashboardClinicoViewModel.cs
-public class DashboardClinicoViewModel
-{
-    public int TotalPacientes { get; set; }
-    public int CitasHoy { get; set; }
-    public int MedicosDisponibles { get; set; }
-    public int SalasOcupadas { get; set; }
-    public decimal IngresosMensuales { get; set; }
-    public List<CitaDelDia> CitasRecientes { get; set; } = new();
-    public List<PacienteReciente> PacientesRecientes { get; set; } = new();
-    public List<MedicoStats> MedicosActivos { get; set; } = new();
-    public List<EspecialidadStats> EspecialidadesPopulares { get; set; } = new();
-}
+using System.Collections.Generic;
 
-public class CitaDelDia
+namespace ClinicApp.Models
 {
-    public int Id { get; set; }
-    public DateTime FechaHora { get; set; }
-    public string PacienteNombre { get; set; }
-    public string MedicoNombre { get; set; }
-    public string Especialidad { get; set; }
-    public string Estado { get; set; } // Programada, En curso, Completada, Cancelada
-    public string Motivo { get; set; }
-}
+    public class DashboardViewModel
+    {
+        public int TotalPacientes { get; set; }
+        public int CitasHoy { get; set; }
+        public int MedicosDisponibles { get; set; }
+        public int SalasOcupadas { get; set; }
+        public decimal IngresosMensuales { get; set; }
+        public List<CitaDelDia> CitasRecientes { get; set; } = new();
+        public List<PacienteReciente> PacientesRecientes { get; set; } = new();
+        public List<MedicoStats> MedicosActivos { get; set; } = new();
+        public List<EspecialidadStats> EspecialidadesPopulares { get; set; } = new();
+    }
 
-public class PacienteReciente
-{
-    public int Id { get; set; }
-    public string NombreCompleto { get; set; }
-    public string Cedula { get; set; }
-    public DateTime FechaRegistro { get; set; }
-    public string UltimaCita { get; set; }
-    public string Estado { get; set; }
-}
+    public class CitaDelDia
+    {
+        public int Id { get; set; }
+        public DateTime FechaHora { get; set; }
+        public string PacienteNombre { get; set; }
+        public string MedicoNombre { get; set; }
+        public string Especialidad { get; set; }
+        public string Estado { get; set; } // Programada, En curso, Completada, Cancelada
+        public string Motivo { get; set; }
+    }
 
-public class MedicoStats
-{
-    public string NombreCompleto { get; set; }
-    public string Especialidad { get; set; }
-    public int CitasHoy { get; set; }
-    public string Estado { get; set; } // Disponible, Ocupado, No disponible
-    public TimeSpan ProximaCita { get; set; }
-}
+    public class PacienteReciente
+    {
+        public int Id { get; set; }
+        public string NombreCompleto { get; set; }
+        public string Cedula { get; set; }
+        public DateTime FechaRegistro { get; set; }
+        public string UltimaCita { get; set; }
+        public string Estado { get; set; }
+    }
 
-public class EspecialidadStats
-{
-    public string Especialidad { get; set; }
-    public int CitasEsteMes { get; set; }
-    public decimal Ingresos { get; set; }
-    public int PacientesAtendidos { get; set; }
-}
-```
-public class DashboardViewModel
-{
-    public int TotalVentas { get; set; }
-    public decimal IngresosMensuales { get; set; }
-    public int ProductosVendidos { get; set; }
-    public int ClientesActivos { get; set; }
-    public List<VentaDelDia> VentasRecientes { get; set; } = new();
-    public List<ProductoTop> ProductosPopulares { get; set; } = new();
-}
+    public class MedicoStats
+    {
+        public string NombreCompleto { get; set; }
+        public string Especialidad { get; set; }
+        public int CitasHoy { get; set; }
+        public string Estado { get; set; } // Disponible, Ocupado, No disponible
+        public TimeSpan ProximaCita { get; set; }
+    }
 
-public class VentaDelDia
-{
-    public int Id { get; set; }
-    public DateTime Fecha { get; set; }
-    public string Cliente { get; set; }
-    public decimal Total { get; set; }
-    public string Estado { get; set; }
-}
+    public class EspecialidadStats
+    {
+        public string Especialidad { get; set; }
+        public int CitasEsteMes { get; set; }
+        public decimal Ingresos { get; set; }
+        public int PacientesAtendidos { get; set; }
+    }
 
-public class ProductoTop
-{
-    public string Nombre { get; set; }
-    public int CantidadVendida { get; set; }
-    public decimal Ingresos { get; set; }
-}
+   }
+
 ```
 
 #### Paso 3: Crear la Razor Page
