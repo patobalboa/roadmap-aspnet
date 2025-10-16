@@ -205,48 +205,154 @@ namespace ClinicApp.Models
 ```csharp
 // Pages/Dashboard.cshtml.cs
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using ClinicApp.Models;
 
-public class DashboardModel : PageModel
+
+namespace ClinicApp.Pages
 {
-    public DashboardViewModel Dashboard { get; set; } = new();
-
-    public void OnGet()
+    public class DashboardModel : PageModel
     {
-        // Simular datos del dashboard
-        Dashboard = new DashboardViewModel
-        {
-            TotalVentas = 1250,
-            IngresosMensuales = 45670.50m,
-            ProductosVendidos = 3420,
-            ClientesActivos = 156,
-            VentasRecientes = GenerarVentasRecientes(),
-            ProductosPopulares = GenerarProductosPopulares()
-        };
-    }
+        public DashboardViewModel Dashboard { get; set; } = new();
 
-    private List<VentaDelDia> GenerarVentasRecientes()
-    {
-        return new List<VentaDelDia>
+        public void OnGet()
         {
-            new() { Id = 1001, Fecha = DateTime.Today, Cliente = "Juan Pérez", Total = 150.00m, Estado = "Completada" },
-            new() { Id = 1002, Fecha = DateTime.Today.AddHours(-2), Cliente = "María García", Total = 280.50m, Estado = "Pendiente" },
-            new() { Id = 1003, Fecha = DateTime.Today.AddHours(-4), Cliente = "Carlos López", Total = 95.75m, Estado = "Completada" },
-            new() { Id = 1004, Fecha = DateTime.Today.AddHours(-6), Cliente = "Ana Martínez", Total = 320.00m, Estado = "Completada" },
-            new() { Id = 1005, Fecha = DateTime.Yesterday, Cliente = "Luis Rodríguez", Total = 180.25m, Estado = "Cancelada" }
-        };
-    }
+            // Simular datos del dashboard
+            Dashboard = new DashboardViewModel
+            {
+                TotalPacientes = 120,
+                CitasHoy = 15,
+                MedicosDisponibles = 8,
+                SalasOcupadas = 5,
+                IngresosMensuales = 4500.75m,
+                CitasRecientes = DiaList,
+                PacientesRecientes = PacienteList,
+                MedicosActivos = MedicoList,
+                EspecialidadesPopulares = EspecialidadList
 
-    private List<ProductoTop> GenerarProductosPopulares()
-    {
-        return new List<ProductoTop>
+            };
+        }
+
+        private List<CitaDelDia> DiaList { get; set; } = new()
         {
-            new() { Nombre = "Laptop Dell", CantidadVendida = 25, Ingresos = 18750.00m },
-            new() { Nombre = "Mouse Logitech", CantidadVendida = 150, Ingresos = 4500.00m },
-            new() { Nombre = "Teclado Mecánico", CantidadVendida = 80, Ingresos = 8000.00m },
-            new() { Nombre = "Monitor 24\"", CantidadVendida = 35, Ingresos = 10500.00m }
+            new CitaDelDia
+            {
+                Id = 1,
+                FechaHora = DateTime.Now.AddHours(1),
+                PacienteNombre = "Juan Perez",
+                MedicoNombre = "Dra. Ana Gomez",
+                Especialidad = "Cardiología",
+                Estado = "Programada",
+                Motivo = "Chequeo anual"
+            },
+            new CitaDelDia
+            {
+                Id = 2,
+                FechaHora = DateTime.Now.AddHours(2),
+                PacienteNombre = "Maria Lopez",
+                MedicoNombre = "Dr. Carlos Ruiz",
+                Especialidad = "Dermatología",
+                Estado = "En curso",
+                Motivo = "Erupción cutánea"
+            },
+            new CitaDelDia
+            {
+                Id = 3,
+                FechaHora = DateTime.Now.AddHours(3),
+                PacienteNombre = "Luis Martinez",
+                MedicoNombre = "Dra. Sofia Torres",
+                Especialidad = "Pediatría",
+                Estado = "Completada",
+                Motivo = "Vacunación"
+            }
         };
+
+        private List<PacienteReciente> PacienteList { get; set; } = new()
+        {
+            new PacienteReciente
+            {
+                Id = 1,
+                NombreCompleto = "Carlos Fernandez",
+                Cedula = "12345678-9",
+                FechaRegistro = DateTime.Now.AddDays(-10),
+                UltimaCita = "2024-06-15",
+                Estado = "Activo"
+            },
+            new PacienteReciente
+            {
+                Id = 2,
+                NombreCompleto = "Ana Morales",
+                Cedula = "98765432-1",
+                FechaRegistro = DateTime.Now.AddDays(-20),
+                UltimaCita = "2024-06-10",
+                Estado = "Inactivo"
+            },
+            new PacienteReciente
+            {
+                Id = 3,
+                NombreCompleto = "Jorge Ramirez",
+                Cedula = "11223344-5",
+                FechaRegistro = DateTime.Now.AddDays(-5),
+                UltimaCita = "2024-06-18",
+                Estado = "Activo"
+            }
+        };
+
+        private List<MedicoStats> MedicoList { get; set; } = new()
+        {
+            new MedicoStats
+            {
+                NombreCompleto = "Dra. Ana Gomez",
+                Especialidad = "Cardiología",
+                CitasHoy = 5,
+                Estado = "Disponible",
+                ProximaCita = TimeSpan.FromHours(1)
+            },
+            new MedicoStats
+            {
+                NombreCompleto = "Dr. Carlos Ruiz",
+                Especialidad = "Dermatología",
+                CitasHoy = 3,
+                Estado = "Ocupado",
+                ProximaCita = TimeSpan.FromHours(2)
+            },
+            new MedicoStats
+            {
+                NombreCompleto = "Dra. Sofia Torres",
+                Especialidad = "Pediatría",
+                CitasHoy = 4,
+                Estado = "No disponible",
+                ProximaCita = TimeSpan.FromHours(3)
+            }
+        };
+
+        private List<EspecialidadStats> EspecialidadList { get; set; } = new()
+        {
+            new EspecialidadStats
+            {
+                Especialidad = "Cardiología",
+                CitasEsteMes = 20,
+                Ingresos = 1500.50m,
+                PacientesAtendidos = 18
+            },
+            new EspecialidadStats
+            {
+                Especialidad = "Dermatología",
+                CitasEsteMes = 15,
+                Ingresos = 1200.00m,
+                PacientesAtendidos = 14
+            },
+            new EspecialidadStats
+            {
+                Especialidad = "Pediatría",
+                CitasEsteMes = 25,
+                Ingresos = 1800.75m,
+                PacientesAtendidos = 22
+            }
+        };
+
     }
 }
+
 ```
 
 #### Paso 4: Vista del Dashboard
