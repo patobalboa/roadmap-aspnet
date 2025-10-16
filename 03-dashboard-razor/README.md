@@ -258,15 +258,14 @@ public class DashboardModel : PageModel
 
 #### Paso 4: Vista del Dashboard
 ```html
-<!-- Pages/Dashboard.cshtml -->
 @page
-@model DashboardModel
+@model ClinicApp.Pages.DashboardModel
 @{
-    ViewData["Title"] = "Dashboard de Ventas";
+	ViewData["Title"] = "Dashboard de Clinica";
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="h3 mb-0 text-gray-800">Dashboard de Ventas</h1>
+    <h1 class="h3 mb-0 text-gray-800">Dashboard de Clinica</h1>
     <div>
         <span class="text-muted">Última actualización: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")</span>
     </div>
@@ -280,12 +279,12 @@ public class DashboardModel : PageModel
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
                         <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                            Total Ventas
+                            Total Pacientes
                         </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Dashboard.TotalVentas</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Dashboard.TotalPacientes</div>
                     </div>
                     <div class="col-auto">
-                        <i class="fas fa-shopping-cart fa-2x text-gray-300"></i>
+                        <i class="fas fa-users fa-2x text-gray-300"></i>
                     </div>
                 </div>
             </div>
@@ -298,12 +297,12 @@ public class DashboardModel : PageModel
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
                         <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                            Ingresos Mensuales
+                            Citas de Hoy
                         </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">$@Model.Dashboard.IngresosMensuales.ToString("N2")</div>
+						<div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Dashboard.CitasHoy</div>
                     </div>
                     <div class="col-auto">
-                        <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                        <i class="fas fa-calendar-check fa-2x text-gray-300"></i>
                     </div>
                 </div>
             </div>
@@ -316,12 +315,12 @@ public class DashboardModel : PageModel
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
                         <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                            Productos Vendidos
+                            Médicos Disponibles
                         </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Dashboard.ProductosVendidos</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Dashboard.MedicosDisponibles</div>
                     </div>
                     <div class="col-auto">
-                        <i class="fas fa-box fa-2x text-gray-300"></i>
+                        <i class="fas fa-user-md fa-2x text-gray-300"></i>
                     </div>
                 </div>
             </div>
@@ -334,12 +333,12 @@ public class DashboardModel : PageModel
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
                         <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                            Clientes Activos
+                            Salas Ocupadas
                         </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Dashboard.ClientesActivos</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Dashboard.SalasOcupadas</div>
                     </div>
                     <div class="col-auto">
-                        <i class="fas fa-users fa-2x text-gray-300"></i>
+                        <i class="fas fa-door-open fa-2x text-gray-300"></i>
                     </div>
                 </div>
             </div>
@@ -349,12 +348,12 @@ public class DashboardModel : PageModel
 
 <!-- Tablas de Datos -->
 <div class="row">
-    <!-- Ventas Recientes -->
-    <div class="col-lg-8">
+    <!-- Citas Recientes -->
+    <div class="col-lg-6">
         <div class="card shadow mb-4">
             <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                <h6 class="m-0 font-weight-bold text-primary">Ventas Recientes</h6>
-                <a asp-page="/Ventas/Index" class="btn btn-primary btn-sm">Ver Todas</a>
+                <h6 class="m-0 font-weight-bold text-primary">Citas Recientes</h6>
+                <a asp-page="/Citas/Index" class="btn btn-primary btn-sm">Ver Todas</a>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -363,28 +362,28 @@ public class DashboardModel : PageModel
                             <tr>
                                 <th>ID</th>
                                 <th>Fecha</th>
-                                <th>Cliente</th>
-                                <th>Total</th>
+                                <th>Paciente</th>
+                                <th>Médico</th>
                                 <th>Estado</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var venta in Model.Dashboard.VentasRecientes)
+							@foreach (var cita in Model.Dashboard.CitasRecientes)
                             {
                                 <tr>
-                                    <td>@venta.Id</td>
-                                    <td>@venta.Fecha.ToString("dd/MM HH:mm")</td>
-                                    <td>@venta.Cliente</td>
-                                    <td>$@venta.Total.ToString("N2")</td>
+                                    <td>@cita.Id</td>
+                                    <td>@cita.FechaHora.ToString("dd/MM HH:mm")</td>
+                                    <td>@cita.PacienteNombre</td>
+                                    <td>@cita.MedicoNombre</td>
                                     <td>
-                                        <span class="badge @(venta.Estado == "Completada" ? "bg-success" : 
-                                                            venta.Estado == "Pendiente" ? "bg-warning" : "bg-danger")">
-                                            @venta.Estado
+                                        <span class="badge @(cita.Estado == "Completada" ? "bg-success" :
+                                                            cita.Estado == "Pendiente" ? "bg-warning" : "bg-danger")">
+                                            @cita.Estado
                                         </span>
                                     </td>
                                     <td>
-                                        <a asp-page="/Ventas/Detalle" asp-route-id="@venta.Id" class="btn btn-sm btn-outline-primary">Ver</a>
+                                        <a asp-page="/Citas/Detalle" asp-route-id="@cita.Id" class="btn btn-sm btn-outline-primary">Ver</a>
                                     </td>
                                 </tr>
                             }
@@ -395,30 +394,62 @@ public class DashboardModel : PageModel
         </div>
     </div>
 
-    <!-- Productos Populares -->
-    <div class="col-lg-4">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Productos Más Vendidos</h6>
-            </div>
-            <div class="card-body">
-                @foreach (var producto in Model.Dashboard.ProductosPopulares)
-                {
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between">
-                            <span class="font-weight-bold">@producto.Nombre</span>
-                            <span class="text-muted">@producto.CantidadVendida unidades</span>
-                        </div>
-                        <div class="small text-success">$@producto.Ingresos.ToString("N2")</div>
-                        <div class="progress mt-1" style="height: 6px;">
-                            <div class="progress-bar bg-primary" style="width: @((producto.CantidadVendida / 150.0) * 100)%"></div>
-                        </div>
-                    </div>
-                }
-            </div>
-        </div>
+    <!-- Pacientes Recientes -->
+    <div class="col-lg-6">
+		<div class="card shadow mb-4">
+			<div class="card-header py-3 d-flex justify-content-between align-items-center">
+				<h6 class="m-0 font-weight-bold text-primary">Pacientes Recientes</h6>
+				<a asp-page="/Pacientes/Index" class="btn btn-primary btn-sm">Ver Todos</a>
+			</div>
+			<div class="card-body">
+				<div class="table-responsive">
+					<table class="table table-bordered">
+						<thead>
+							<tr>
+								<th>Cédula</th>
+								<th>Nombre</th>
+								<th>Fecha Registro</th>
+								<th>Estado</th>
+								<th>Acciones</th>
+							</tr>
+						</thead>
+						<tbody>
+							@foreach (var paciente in Model.Dashboard.PacientesRecientes)
+							{
+								<tr>
+									<td>@paciente.Cedula</td>
+									<td>@paciente.NombreCompleto</td>
+									<td>@paciente.FechaRegistro.ToString("dd/MM/yyyy")</td>
+									<td>@paciente.Estado</td>
+									<td>
+										<a asp-page="/Pacientes/Detalle" asp-route-cedula="@paciente.Cedula"
+										   class="btn btn-sm btn-info">Ver</a>
+									</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
     </div>
 </div>
+```
+### Paso 5°: Enlazar Layout de Views e Importar Modelos en Pages
+```html
+// Añadir esto en /Pages/_ViewStart.cshtml
+@{
+   Layout = "../Views/Shared/_Layout.cshtml";
+}
+
+```
+
+```html
+// Añadir esto en /Pages/_ViewImports.cshtml
+@using ClinicApp
+@using ClinicApp.Models
+@namespace ClinicApp.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 ```
 
 ### Puntos Clave a Explicar:
