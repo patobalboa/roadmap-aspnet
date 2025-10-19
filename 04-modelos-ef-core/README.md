@@ -391,6 +391,14 @@ INSERT INTO Pacientes (Cedula, Nombres, Apellidos, FechaNacimiento, Telefono, Em
 📦 Microsoft.EntityFrameworkCore.Tools (8.0.0)
 📦 Microsoft.EntityFrameworkCore.Design (8.0.0)
 📦 Microsoft.VisualStudio.Web.CodeGeneration.Design (8.0.0)
+
+Opcionalmente, usar Package Manager Console:
+
+Install-Package Microsoft.EntityFrameworkCore.SqlServer -Version 8.0.0
+Install-Package Microsoft.EntityFrameworkCore.Tools -Version 8.0.0
+Install-Package Microsoft.EntityFrameworkCore.Design -Version 8.0.0
+Install-Package Microsoft.VisualStudio.Web.CodeGeneration.Design -Version 8.0.0
+
 ```
 
 #### Paso 3: Configurar Connection String
