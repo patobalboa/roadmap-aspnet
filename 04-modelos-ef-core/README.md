@@ -841,4 +841,4 @@ Scaffold-DbContext "..." -OutputDir Models -NoOnConfiguring
 
 ---
 **Anterior:** [03 - Dashboard con Razor Pages](../03-dashboard-razor/)  
-**Siguiente:** [05 - API REST y Controladores](../05-api-rest-controladores/)
+**Siguiente:** [05 - Controladores MVC CRUD](../05-controladores-mvc-crud/)
