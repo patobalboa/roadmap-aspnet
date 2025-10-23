@@ -265,8 +265,6 @@ public partial class AgregadoCampoAlergias : Migration
 
 ## 🔧 Actividad Práctica en Clase (2 horas)
 
-## 🔧 Actividad Práctica en Clase (2 horas)
-
 ### 🚨 **ENFOQUE ALTERNATIVO: Database First con Scaffolding**
 
 > **Para profesores:** Este enfoque es más rápido cuando ya tienes una base de datos diseñada y quieres generar automáticamente los modelos, DbContext y controladores.
