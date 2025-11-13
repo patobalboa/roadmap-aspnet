@@ -43,51 +43,77 @@ Al finalizar esta sección, el estudiante será capaz de:
 
 ---
 
-## Paso 1: Crear el modelo Usuario
+## Paso 1: Crear la tabla Usuarios en SQL Server
+
+### Abrir SQL Server Management Studio (SSMS) y ejecutar:
+
+```sql
+-- Usar la base de datos de tu clínica
+USE ClinicaDB;
+GO
+
+-- Crear tabla Usuarios
+CREATE TABLE Usuarios (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    NombreCompleto NVARCHAR(100) NOT NULL,
+    NombreUsuario NVARCHAR(50) NOT NULL UNIQUE,
+    Email NVARCHAR(200) NOT NULL UNIQUE,
+    PasswordHash NVARCHAR(255) NOT NULL,
+    Rol NVARCHAR(20) NOT NULL,
+    Activo BIT NOT NULL DEFAULT 1,
+    FechaCreacion DATETIME NOT NULL DEFAULT GETDATE(),
+    UltimoAcceso DATETIME NULL
+);
+GO
+
+-- Insertar usuario administrador por defecto
+-- Password: "Admin123!" (hasheado con BCrypt)
+INSERT INTO Usuarios (NombreCompleto, NombreUsuario, Email, PasswordHash, Rol, Activo, FechaCreacion)
+VALUES (
+    'Administrador del Sistema', 
+    'admin', 
+    'admin@clinica.cl',
+    '$2a$11$hKFQzx/wKdN3J5x5KGZaJuP3xQvZ6qZxvWQBYLYdBXQqVNUZV3YNW',
+    'Administrador',
+    1,
+    GETDATE()
+);
+GO
+
+-- Verificar que se creó correctamente
+SELECT * FROM Usuarios;
+GO
+```
+
+**Resultado esperado:**
+```
+Id  NombreCompleto              NombreUsuario  Email               Rol
+1   Administrador del Sistema   admin          admin@clinica.cl    Administrador
+```
+
+---
+
+## Paso 2: Hacer Scaffolding de la tabla Usuarios
+
+### En Visual Studio - Package Manager Console:
+
+```powershell
+# Hacer scaffold solo de la tabla Usuarios
+Scaffold-DbContext "Server=TU_SERVIDOR;Database=ClinicaDB;Trusted_Connection=True;TrustServerCertificate=True;" Microsoft.EntityFrameworkCore.SqlServer -Tables Usuarios -OutputDir Models -Context ClinicaContext -Force
+```
+
+**Esto generará:**
+- `Models/Usuario.cs` - Modelo generado automáticamente
+- Actualizará `Data/ClinicaContext.cs` - Agregará DbSet<Usuario>
+
+---
+
+## Paso 3: Crear clase de Roles (no está en la BD)
 
 ```csharp
-// Models/Usuario.cs
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
+// Models/Roles.cs - CREAR NUEVO ARCHIVO
 namespace SistemaClinicaMVC.Models
 {
-    /// <summary>
-    /// Modelo para usuarios del sistema (Admins, Doctores, Recepcionistas)
-    /// </summary>
-    public class Usuario
-    {
-        [Key]
-        public int Id { get; set; }
-
-        [Required]
-        [StringLength(100)]
-        public string NombreCompleto { get; set; }
-
-        [Required]
-        [StringLength(50)]
-        public string NombreUsuario { get; set; } // Usado para login
-
-        [Required]
-        [EmailAddress]
-        [StringLength(200)]
-        public string Email { get; set; }
-
-        [Required]
-        [StringLength(255)]
-        public string PasswordHash { get; set; } // Password encriptado
-
-        [Required]
-        [StringLength(20)]
-        public string Rol { get; set; } // "Administrador", "Doctor", "Recepcionista"
-
-        public bool Activo { get; set; } = true;
-
-        public DateTime FechaCreacion { get; set; } = DateTime.Now;
-
-        public DateTime? UltimoAcceso { get; set; }
-    }
-
     /// <summary>
     /// Roles disponibles en el sistema
     /// </summary>
@@ -102,74 +128,40 @@ namespace SistemaClinicaMVC.Models
 
 ---
 
-## Paso 2: Actualizar DbContext
+## Paso 4: Verificar el modelo generado por Scaffolding
+
+El scaffolding debió generar algo similar a esto:
 
 ```csharp
-// Data/ClinicaContext.cs - ACTUALIZAR
-using Microsoft.EntityFrameworkCore;
-using SistemaClinicaMVC.Models;
+// Models/Usuario.cs - GENERADO POR SCAFFOLDING
+using System;
+using System.Collections.Generic;
 
-namespace SistemaClinicaMVC.Data
+namespace SistemaClinicaMVC.Models
 {
-    public class ClinicaContext : DbContext
+    public partial class Usuario
     {
-        public ClinicaContext(DbContextOptions<ClinicaContext> options)
-            : base(options)
-        {
-        }
-
-        public DbSet<Paciente> Pacientes { get; set; }
-        public DbSet<Usuario> Usuarios { get; set; } // NUEVO
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-
-            // Configurar índices únicos
-            modelBuilder.Entity<Usuario>()
-                .HasIndex(u => u.NombreUsuario)
-                .IsUnique();
-
-            modelBuilder.Entity<Usuario>()
-                .HasIndex(u => u.Email)
-                .IsUnique();
-
-            // Datos semilla: crear usuario administrador por defecto
-            modelBuilder.Entity<Usuario>().HasData(
-                new Usuario
-                {
-                    Id = 1,
-                    NombreCompleto = "Administrador del Sistema",
-                    NombreUsuario = "admin",
-                    Email = "admin@clinica.cl",
-                    // Password: "Admin123!" (hasheado con BCrypt)
-                    PasswordHash = "$2a$11$hKFQzx/wKdN3J5x5KGZaJuP3xQvZ6qZxvWQBYLYdBXQqVNUZV3YNW",
-                    Rol = Roles.Administrador,
-                    Activo = true,
-                    FechaCreacion = DateTime.Now
-                }
-            );
-        }
+        public int Id { get; set; }
+        public string NombreCompleto { get; set; } = null!;
+        public string NombreUsuario { get; set; } = null!;
+        public string Email { get; set; } = null!;
+        public string PasswordHash { get; set; } = null!;
+        public string Rol { get; set; } = null!;
+        public bool Activo { get; set; }
+        public DateTime FechaCreacion { get; set; }
+        public DateTime? UltimoAcceso { get; set; }
     }
 }
 ```
 
+**Nota:** El modelo es `partial class`, lo que significa que puedes extenderlo sin modificar el archivo generado.
+
 ---
 
-## Paso 3: Crear migración y actualizar base de datos
+## Paso 5: Instalar BCrypt para encriptar contraseñas
 
 ```powershell
 # En la terminal de Visual Studio (Package Manager Console)
-Add-Migration AgregarUsuarios
-Update-Database
-```
-
----
-
-## Paso 4: Instalar BCrypt para encriptar contraseñas
-
-```powershell
-# En la terminal de Visual Studio
 Install-Package BCrypt.Net-Next
 ```
 
@@ -190,7 +182,7 @@ Hash: "$2a$11$XdKjfLmNvP9zY3QaB1cDeOpqRsT4vWxYz..."
 
 ---
 
-## Paso 5: Crear DTOs para autenticación
+## Paso 6: Crear DTOs para autenticación
 
 ```csharp
 // DTOs/AuthDto.cs - Crear en carpeta DTOs
@@ -283,7 +275,7 @@ namespace SistemaClinicaMVC.DTOs
 
 ---
 
-## Paso 6: Crear servicio de autenticación
+## Paso 7: Crear servicio de autenticación
 
 ```csharp
 // Services/AuthService.cs
@@ -442,7 +434,7 @@ namespace SistemaClinicaMVC.Services
 
 ---
 
-## Paso 7: Registrar servicio en Program.cs
+## Paso 8: Registrar servicio en Program.cs
 
 ```csharp
 // Program.cs - AGREGAR después de agregar DbContext
@@ -466,7 +458,7 @@ app.UseAuthorization();
 
 ---
 
-## Paso 8: Crear el controlador de autenticación
+## Paso 9: Crear el controlador de autenticación
 
 ```csharp
 // Controllers/AuthController.cs
@@ -690,7 +682,7 @@ namespace SistemaClinicaMVC.Controllers
 
 ---
 
-## Paso 9: Crear las vistas de autenticación
+## Paso 10: Crear las vistas de autenticación
 
 ### Vista Login
 ```html
@@ -1063,7 +1055,7 @@ namespace SistemaClinicaMVC.Controllers
 
 ---
 
-## Paso 10: Proteger el controlador de Pacientes
+## Paso 11: Proteger el controlador de Pacientes
 
 ```csharp
 // Controllers/PacientesController.cs - AGREGAR al inicio de la clase
@@ -1093,7 +1085,7 @@ public class PacientesController : Controller
 
 ---
 
-## Paso 11: Actualizar _Layout.cshtml
+## Paso 12: Actualizar _Layout.cshtml
 
 ```html
 <!-- Views/Shared/_Layout.cshtml - ACTUALIZAR navbar -->
@@ -1257,19 +1249,49 @@ Permitir resetear contraseña con un token temporal
 
 ## 📝 Checklist de Implementación
 
-- [ ] Instalar BCrypt.Net-Next
-- [ ] Crear modelo Usuario
-- [ ] Actualizar DbContext y crear migración
-- [ ] Crear DTOs de autenticación
-- [ ] Crear AuthService
-- [ ] Configurar autenticación en Program.cs
-- [ ] Crear AuthController
-- [ ] Crear vistas de Login y Registro
-- [ ] Proteger PacientesController
-- [ ] Actualizar _Layout.cshtml
-- [ ] Probar login con usuario admin
-- [ ] Probar registro de nuevo usuario
-- [ ] Probar autorización por roles
-- [ ] Verificar protección de rutas
+- [ ] **Paso 1:** Crear tabla Usuarios en SQL Server con SSMS
+- [ ] **Paso 2:** Insertar usuario admin inicial (con password hasheado)
+- [ ] **Paso 3:** Hacer Scaffolding de la tabla Usuarios
+- [ ] **Paso 4:** Verificar que se generó Models/Usuario.cs
+- [ ] **Paso 5:** Crear clase Roles.cs manualmente
+- [ ] **Paso 6:** Instalar BCrypt.Net-Next
+- [ ] **Paso 7:** Crear DTOs de autenticación (LoginDto, RegistroDto, etc.)
+- [ ] **Paso 8:** Crear AuthService
+- [ ] **Paso 9:** Configurar autenticación en Program.cs
+- [ ] **Paso 10:** Crear AuthController
+- [ ] **Paso 11:** Crear vistas de Login, Registro, Perfil
+- [ ] **Paso 12:** Proteger PacientesController con [Authorize]
+- [ ] **Paso 13:** Actualizar _Layout.cshtml con navbar de usuario
+- [ ] **Paso 14:** Probar login con usuario admin
+- [ ] **Paso 15:** Probar registro de nuevo usuario
+- [ ] **Paso 16:** Probar autorización por roles
+- [ ] **Paso 17:** Verificar protección de rutas
 
-¡Felicitaciones! Ahora tu sistema tiene autenticación y autorización completa. 🎉
+---
+
+## 🎯 Resumen del Enfoque Database First
+
+### Ventajas de este enfoque:
+1. ✅ **La base de datos es la fuente de verdad**
+2. ✅ **Scaffolding genera el código automáticamente**
+3. ✅ **Modelos siempre sincronizados con la BD**
+4. ✅ **No necesitas migraciones manuales**
+5. ✅ **Ideal para trabajar con DBAs**
+
+### Flujo de trabajo:
+```
+1. Crear/Modificar tabla en SQL Server (SSMS)
+2. Ejecutar Scaffold-DbContext
+3. Visual Studio genera/actualiza modelos
+4. Usar los modelos en controladores
+```
+
+### Diferencias con Code First:
+| Aspecto | Code First | Database First (Tu enfoque) |
+|---------|-----------|----------------------------|
+| Inicio | Código C# | Base de datos SQL |
+| Modelos | Escritos manualmente | Generados por scaffolding |
+| Cambios | Migraciones | Alterar tabla + scaffold |
+| Control | Desarrollador | DBA + Desarrollador |
+
+¡Felicitaciones! Ahora tu sistema tiene autenticación completa usando **Database First con Scaffolding**. 🎉
