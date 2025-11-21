@@ -237,23 +237,8 @@ Debes presentar tu aplicación como si fueras un **vendedor de software** presen
 - Demostrar roles y permisos
 - Mostrar búsqueda y filtrado
 
-#### 3. **Aspectos Técnicos** (2-3 minutos)
+#### 3. **Preguntas y Respuestas** (5 minutos)
 
-- Tecnologías utilizadas
-- Arquitectura de la aplicación
-- Base de datos y relaciones
-- Seguridad implementada
-
-#### 4. **Preguntas y Respuestas** (5 minutos)
-
-Estar preparado para responder sobre:
-
-- Decisiones de diseño
-- Implementación técnica
-- Validaciones específicas
-- Sistema de autenticación
-- Manejo de errores
-- Escalabilidad futura
 
 ### Consejos para la Presentación:
 
